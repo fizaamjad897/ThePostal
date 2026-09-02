@@ -1,31 +1,29 @@
 {
-  "name": "smtp-client",
-  "version": "0.1.0",
+  "name": "postal",
+  "version": "1.0.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+  "description": "Postal — a self-hosted SMTP mail transfer agent with a network-telemetry dashboard.",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=20.11.0"
   },
-  "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/server": "^11.11.0",
-    "@emotion/styled": "^11.14.0",
-    "@mui/icons-material": "^6.2.1",
-    "@mui/material": "^6.2.1",
-    "bcryptjs": "^2.4.3",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "formidable": "^3.5.2",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.9.2",
-    "multer": "^1.4.5-lts.1",
-    "next": "15.1.2",
-    "next-connect": "^1.0.0",
-    "prop-types": "^15.8.1",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:server": "npm run dev --workspace @postal/server",
+    "dev:web": "npm run dev --workspace @postal/web",
+    "build": "npm run build --workspace @postal/shared && npm run build --workspaces --if-present",
+    "start": "npm run start --workspace @postal/server",
+    "test": "npm run test --workspace @postal/server",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "seed": "npm run seed --workspace @postal/server",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down -v"
+  },
+  "overrides": {
+    "@fastify/static": "^10.1.3"
   }
 }

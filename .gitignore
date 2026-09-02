@@ -1,4 +1,26 @@
-# .gitignore
-node_modules
-.next
+# Dependencies
+node_modules/
+
+# Build output
+.next/
+dist/
+*.tsbuildinfo
+
+# Environment
+.env
 .env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test artifacts
+coverage/
+.mongodb-binaries/
+
+# Editors and OS
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json

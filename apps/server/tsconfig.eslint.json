@@ -1,0 +1,7 @@
+{
+  // Type-aware linting needs a project that covers tests and config too, which
+  // the build tsconfig deliberately excludes from its compilation output.
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "noEmit": true },
+  "include": ["src/**/*.ts", "tests/**/*.ts", "*.ts", "*.js"]
+}

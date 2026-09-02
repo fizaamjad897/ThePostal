@@ -1,0 +1,87 @@
+# Full local stack: API + MTA, its datastores, and a mail sink to deliver into.
+#
+#   docker compose up -d
+#   npm run seed
+#
+# Mailpit is the piece that makes the project demonstrable offline — outbound
+# mail is relayed to it over real SMTP and is readable at http://localhost:8025,
+# so a complete send-and-inspect loop runs with no internet connection and no
+# risk of delivering test mail to a real address.
+
+services:
+  mongo:
+    image: mongo:7.0
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # `appendonly` so a restart does not lose queued deliveries — the whole
+    # reason for choosing Redis over the in-process driver.
+    command: ['redis-server', '--appendonly', 'yes']
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - '1025:1025' # SMTP — where Postal relays outbound mail
+      - '8025:8025' # Web UI — where you read what was delivered
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
+  server:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    ports:
+      - '4000:4000' # HTTP API
+      - '2525:2525' # Inbound SMTP
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: info
+      PORT: 4000
+      MONGODB_URI: mongodb://mongo:27017/postal
+      REDIS_URL: redis://redis:6379
+      # Override in a real deployment. Kept explicit here so the stack starts
+      # with one command rather than failing its own config validation.
+      JWT_SECRET: ${JWT_SECRET:-local-development-secret-value-not-for-production-use}
+      CORS_ORIGINS: http://localhost:3000
+      MAIL_DOMAIN: postal.local
+      SMTP_HOSTNAME: mx.postal.local
+      SMTP_INGRESS_PORT: 2525
+      SMTP_RELAY_HOST: mailpit
+      SMTP_RELAY_PORT: 1025
+      SMTP_TLS_POLICY: disabled
+      SMTP_TLS_REJECT_UNAUTHORIZED: 'false'
+
+volumes:
+  mongo-data:
+  redis-data:

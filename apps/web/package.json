@@ -1,0 +1,29 @@
+{
+  "name": "@postal/web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Postal web client — mail UI and network telemetry dashboards.",
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/server": "^11.11.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^6.2.1",
+    "@mui/material": "^6.2.1",
+    "@postal/shared": "*",
+    "next": "^15.5.25",
+    "prop-types": "^15.8.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.7",
+    "eslint": "^9.17.0",
+    "eslint-config-next": "^15.5.25"
+  }
+}

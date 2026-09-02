@@ -3,6 +3,7 @@ import type { FastifyInstance } from 'fastify';
 import { buildApp } from '../src/app.js';
 import { MessageModel } from '../src/models/message.model.js';
 import { backoffFor } from '../src/queue/delivery.worker.js';
+import { QUEUE_NAME, jobIdFor } from '../src/queue/bullmq.driver.js';
 import { clearDatabase, startTestDatabase, stopTestDatabase } from './helpers/database.js';
 
 let app: FastifyInstance;
@@ -321,5 +322,26 @@ describe('retry backoff', () => {
 
   it('caps the delay at one hour however many attempts have failed', () => {
     expect(backoffFor(50)).toBeLessThanOrEqual(3_600_000);
+  });
+});
+
+describe('BullMQ queue identifiers', () => {
+  it('uses a queue name BullMQ will accept', () => {
+    // BullMQ joins this name with ":" to build Redis keys and rejects a name
+    // that already contains one. This only surfaces when Redis is configured,
+    // so the constraint is asserted here rather than left to a deployment.
+    expect(QUEUE_NAME).not.toContain(':');
+    expect(QUEUE_NAME).toMatch(/^[A-Za-z0-9._-]+$/);
+  });
+
+  it('derives a safe job id from a Message-ID', () => {
+    const id = jobIdFor('<3f1a-9c2e@postal.local>', 2);
+
+    expect(id).not.toContain(':');
+    expect(id).toMatch(/^[A-Za-z0-9._-]+$/);
+    // Still unique per message and per attempt, which is what makes
+    // re-enqueueing an in-flight message idempotent.
+    expect(id).not.toBe(jobIdFor('<3f1a-9c2e@postal.local>', 3));
+    expect(id).not.toBe(jobIdFor('<other-id@postal.local>', 2));
   });
 });

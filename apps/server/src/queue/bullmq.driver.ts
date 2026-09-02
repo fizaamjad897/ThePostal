@@ -3,7 +3,19 @@ import { Redis } from 'ioredis';
 import { logger } from '../config/logger.js';
 import type { DeliveryJob, DeliveryQueue, JobHandler, QueueCounts } from './types.js';
 
-const QUEUE_NAME = 'postal:delivery';
+/**
+ * BullMQ builds its Redis keys by joining this name with `:`, and rejects a name
+ * that already contains one. The same constraint applies to custom job ids,
+ * which is why `jobIdFor` below sanitises the Message-ID rather than using it
+ * directly — a Message-ID is `<uuid@domain>`, and the angle brackets and `@`
+ * make for awkward keys even where they are technically accepted.
+ */
+export const QUEUE_NAME = 'postal-delivery';
+
+/** Build a BullMQ-safe job id that is still unique per message and attempt. */
+export function jobIdFor(messageId: string, attempt: number): string {
+  return `${messageId.replace(/[^A-Za-z0-9._-]/g, '')}-${attempt}`;
+}
 
 /**
  * Durable delivery queue backed by Redis.
@@ -60,7 +72,7 @@ export class BullDeliveryQueue implements DeliveryQueue {
       // The job id makes enqueueing idempotent per attempt: a sweeper that
       // re-queues a message already in flight is a no-op rather than a
       // duplicate delivery.
-      jobId: `${job.messageId}:${job.attempt}`,
+      jobId: jobIdFor(job.messageId, job.attempt),
     });
   }
 

@@ -16,8 +16,13 @@ FROM base AS deps
 COPY package.json package-lock.json ./
 COPY packages/shared/package.json ./packages/shared/
 COPY apps/server/package.json ./apps/server/
-# `--ignore-scripts` because the shared package's `prepare` hook needs its
-# sources, which are not in this layer yet.
+
+# The shared package's `prepare` hook compiles it on install, which is the right
+# behaviour for a developer running `npm install` but wrong here: its sources are
+# not in this layer, and npm runs a workspace `prepare` even under
+# `--ignore-scripts`. Stripping the hook is the only reliable way to opt out.
+RUN node -e "const f='packages/shared/package.json',j=require('/app/'+f);delete j.scripts.prepare;require('fs').writeFileSync(f,JSON.stringify(j,null,2))"
+
 RUN npm ci --workspace @postal/server --include-workspace-root --ignore-scripts
 
 # --- build -----------------------------------------------------------------
@@ -34,6 +39,11 @@ ENV NODE_ENV=production
 COPY package.json package-lock.json ./
 COPY packages/shared/package.json ./packages/shared/
 COPY apps/server/package.json ./apps/server/
+
+# Same reason as above, and load-bearing here: this stage omits devDependencies,
+# so `tsc` does not exist and the hook would fail the build outright.
+RUN node -e "const f='packages/shared/package.json',j=require('/app/'+f);delete j.scripts.prepare;require('fs').writeFileSync(f,JSON.stringify(j,null,2))"
+
 RUN npm ci --workspace @postal/server --include-workspace-root --omit=dev --ignore-scripts \
  && npm cache clean --force
 

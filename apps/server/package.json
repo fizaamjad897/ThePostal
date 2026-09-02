@@ -13,7 +13,9 @@
     "lint": "eslint src tests",
     "test": "vitest run",
     "test:watch": "vitest",
-    "seed": "tsx src/db/seed.ts"
+    "seed": "tsx src/db/seed.ts",
+    "migrate": "tsx src/db/migrate-indexes.ts",
+    "migrate:prod": "node dist/db/migrate-indexes.js"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",

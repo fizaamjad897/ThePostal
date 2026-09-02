@@ -2,7 +2,7 @@
   "name": "postal",
   "version": "1.0.0",
   "private": true,
-  "description": "Postal — a self-hosted SMTP mail transfer agent with a network-telemetry dashboard.",
+  "description": "Postal \u2014 a self-hosted SMTP mail transfer agent with a network-telemetry dashboard.",
   "workspaces": [
     "packages/*",
     "apps/*"
@@ -20,6 +20,7 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "seed": "npm run seed --workspace @postal/server",
+    "migrate": "npm run migrate --workspace @postal/server",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down -v"
   },

@@ -420,6 +420,28 @@ The variables worth knowing:
 
 ---
 
+## Deployment
+
+Backend on a small VM, frontend on Vercel, databases on managed free tiers —
+Postal runs an SMTP listener and a delivery worker that must stay alive, so it
+needs a real host rather than a serverless one.
+
+See **[docs/DEPLOY.md](docs/DEPLOY.md)** for the full runbook (AWS EC2 + Vercel +
+Atlas + Upstash, with automatic TLS via Caddy).
+
+```bash
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
+docker compose --env-file .env.production -f docker-compose.prod.yml \
+  exec server node apps/server/dist/db/migrate-indexes.js
+```
+
+Two things that bite if skipped: the index migration is a required release step
+(production disables `autoIndex`, and the unique indexes are what enforce the
+`email` constraint), and the frontend must proxy `/api` through its own origin
+or the `sameSite=lax` refresh cookie will not be sent.
+
+---
+
 ## Limitations
 
 Stated plainly, because a project that claims to be a complete mail server and is not would be worse

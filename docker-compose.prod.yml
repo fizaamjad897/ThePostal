@@ -1,0 +1,67 @@
+# Production stack for a single small VM (an EC2 t3.micro or equivalent).
+#
+# The databases are deliberately NOT here. A 1 GB box cannot comfortably run
+# MongoDB, Redis, Node and a mail sink at once — MongoDB alone wants most of
+# that. Pointing at managed free tiers (Atlas M0, Upstash) leaves this host
+# running two light Node processes, and has the side benefit that the tiers
+# holding your data are permanent while EC2 credits are not.
+#
+#   docker compose -f docker-compose.prod.yml up -d --build
+
+services:
+  # Terminates TLS and provisions Let's Encrypt certificates automatically.
+  # Nothing else is published to the internet directly.
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?set API_DOMAIN in .env.production}
+      MAIL_UI_DOMAIN: ${MAIL_UI_DOMAIN:-}
+    depends_on:
+      - server
+
+  server:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    restart: unless-stopped
+    env_file: .env.production
+    expose:
+      - '4000'
+    ports:
+      # The inbound SMTP listener is the one port that must be reachable
+      # directly — SMTP is not HTTP and cannot be proxied by Caddy.
+      - '2525:2525'
+    healthcheck:
+      test: ['CMD', 'node', '-e', "fetch('http://127.0.0.1:4000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # Local mail sink, so the demo works without sending to real addresses.
+  # Swap SMTP_RELAY_HOST for a provider (Resend, SendGrid) to deliver for real.
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    expose:
+      - '1025'
+      - '8025'
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+      # Mailpit's UI shows every message it has received. Without auth, anyone
+      # who finds the URL reads all of it — set these or do not expose it.
+      MP_UI_AUTH: ${MAILPIT_UI_AUTH:?set MAILPIT_UI_AUTH as user:bcrypt-hash}
+      MP_MAX_MESSAGES: 500
+
+volumes:
+  caddy-data:
+  caddy-config:

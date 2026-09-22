@@ -1,0 +1,31 @@
+# Caddy obtains and renews Let's Encrypt certificates on its own, provided the
+# domain's A record already points at this host. No certbot, no cron, no renewal
+# script to forget about.
+
+{$API_DOMAIN} {
+	encode zstd gzip
+
+	# The API and the OpenAPI docs.
+	reverse_proxy server:4000
+
+	header {
+		# The API is consumed by fetch() from the web origin, never framed.
+		X-Frame-Options "DENY"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	log {
+		output file /data/access.log {
+			roll_size 10MiB
+			roll_keep 5
+		}
+	}
+}
+
+# Optional: the Mailpit UI, so a visitor can read the mail the demo delivered.
+# Only served when MAIL_UI_DOMAIN is set; it is protected by MP_UI_AUTH.
+{$MAIL_UI_DOMAIN} {
+	reverse_proxy mailpit:8025
+}

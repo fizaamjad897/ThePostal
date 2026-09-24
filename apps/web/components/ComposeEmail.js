@@ -24,6 +24,7 @@ import {
   ExpandMore,
   ExpandLess,
 } from '@mui/icons-material';
+import { composeMessageSchema } from '@postal/shared';
 import { messages as messagesApi } from '../lib/api';
 import { useRequireAuth } from '../lib/auth-context';
 import { collectClientTrace, fileToBase64 } from '../lib/network-trace';
@@ -45,8 +46,28 @@ export default function ComposeEmail() {
   const oversize = attachmentBytes > MAX_TOTAL_BYTES;
 
   const recipients = useMemo(() => parseAddresses(form.to), [form.to]);
-  const canSend =
-    recipients.length > 0 && form.subject.trim() && form.body.trim() && !oversize && status.kind !== 'sending';
+
+  /**
+   * Validate against the same Zod schema the API enforces, rather than
+   * reimplementing its rules here. Duplicated validation drifts — a field the
+   * server later requires would keep passing in the browser until someone hit
+   * a 400 they could not explain.
+   */
+  const validation = useMemo(
+    () =>
+      composeMessageSchema.safeParse({
+        to: recipients,
+        cc: parseAddresses(form.cc),
+        bcc: parseAddresses(form.bcc),
+        subject: form.subject.trim(),
+        body: form.body,
+        html: form.html,
+        attachments: [],
+      }),
+    [recipients, form.cc, form.bcc, form.subject, form.body, form.html],
+  );
+
+  const canSend = validation.success && !oversize && status.kind !== 'sending';
 
   const update = (field) => (event) => {
     const value = field === 'html' ? event.target.checked : event.target.value;

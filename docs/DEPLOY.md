@@ -151,9 +151,11 @@ cp .env.production.example .env.production
 Generate the two secrets:
 
 ```bash
-openssl rand -base64 48                                    # JWT_SECRET
-docker run --rm axllent/mailpit:latest /mailpit hash 'pick-a-password'   # MAILPIT_UI_AUTH
+openssl rand -base64 48      # JWT_SECRET — copy the whole line
 ```
+
+`MAILPIT_UI_AUTH` is just `user:password` — pick any password. It guards the demo
+mail sink, not anything sensitive.
 
 Edit `.env.production` (`nano .env.production`) and set:
 
@@ -161,7 +163,7 @@ Edit `.env.production` (`nano .env.production`) and set:
 | --- | --- |
 | `API_DOMAIN` | `postal-api.yourdomain.com` |
 | `MAIL_UI_DOMAIN` | `postal-mail.yourdomain.com`, or blank |
-| `MAILPIT_UI_AUTH` | `demo:<bcrypt hash from above>` |
+| `MAILPIT_UI_AUTH` | `demo:<any password you choose>` |
 | `JWT_SECRET` | The random string from above |
 | `MONGODB_URI` | Your Atlas connection string |
 | `REDIS_URL` | Your Upstash URL, or delete the line |

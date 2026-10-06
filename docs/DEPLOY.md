@@ -1,7 +1,6 @@
 # Deploying Postal
 
-Backend on an AWS EC2 instance, frontend on Vercel, databases on managed free
-tiers.
+Backend on an AWS EC2 instance, frontend on Vercel, MongoDB on Atlas's free tier.
 
 **Why this shape.** Postal is not a stateless API — it runs an SMTP listener, a
 delivery worker and a retry sweeper, all of which must stay alive. That rules out
@@ -59,13 +58,13 @@ git ls-files | grep -E '^\.env|node_modules' || echo "clean"
 4. Copy the connection string. It looks like
    `mongodb+srv://user:pass@cluster.xxxxx.mongodb.net/postal`.
 
-**Upstash Redis** — free tier.
+**Redis** — nothing to set up. It runs as a container in the production stack.
 
-1. Create a database at [upstash.com](https://upstash.com).
-2. Copy the `rediss://` connection URL.
-
-Redis is optional. Without it the queue falls back to an in-process driver that
-works but loses queued deliveries on restart.
+A hosted Redis free tier does not fit this workload: a BullMQ worker issues
+roughly 130 commands a minute while completely idle, which is about 5.7 million
+a month against a typical 500,000 allowance. Redis itself needs about 9 MB
+resident, so running it next to the app is both free and faster than crossing
+the network for every queue operation.
 
 ---
 
@@ -166,7 +165,7 @@ Edit `.env.production` (`nano .env.production`) and set:
 | `MAILPIT_UI_AUTH` | `demo:<any password you choose>` |
 | `JWT_SECRET` | The random string from above |
 | `MONGODB_URI` | Your Atlas connection string |
-| `REDIS_URL` | Your Upstash URL, or delete the line |
+| `REDIS_URL` | Leave as `redis://redis:6379` |
 | `CORS_ORIGINS` | `https://your-app.vercel.app` |
 
 Bring it up:
@@ -234,7 +233,7 @@ Running costs once credits are exhausted, roughly:
 | --- | --- |
 | `t3.micro` | ~$7.50/mo |
 | Public IPv4 | ~$3.60/mo |
-| Atlas M0, Upstash, Vercel | $0 |
+| Atlas M0, Vercel | $0 |
 
 To tear down: terminate the instance, **release the Elastic IP** (an unassociated
 one still bills), and delete the EBS volume.

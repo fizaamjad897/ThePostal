@@ -1,10 +1,13 @@
 # Production stack for a single small VM (an EC2 t3.micro or equivalent).
 #
-# The databases are deliberately NOT here. A 1 GB box cannot comfortably run
-# MongoDB, Redis, Node and a mail sink at once — MongoDB alone wants most of
-# that. Pointing at managed free tiers (Atlas M0, Upstash) leaves this host
-# running two light Node processes, and has the side benefit that the tiers
-# holding your data are permanent while EC2 credits are not.
+# MongoDB is deliberately NOT here — it alone would want most of a 1 GB box, so
+# it lives on Atlas M0 (free, permanent).
+#
+# Redis IS here, and that is a measured decision rather than a default. A BullMQ
+# worker issues roughly 130 commands a minute while completely idle, which is
+# about 5.7 million a month — eleven times the 500k that hosted free tiers
+# allow. Redis itself uses about 9 MB resident, so running it alongside the app
+# costs almost nothing and removes both the quota and the network hop.
 #
 #   docker compose -f docker-compose.prod.yml up -d --build
 
@@ -27,12 +30,34 @@ services:
     depends_on:
       - server
 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # `appendonly` so queued deliveries survive a restart — the whole reason for
+    # using Redis over the in-process queue. `noeviction` because silently
+    # dropping a queued message to free memory would lose mail.
+    command: >
+      redis-server --appendonly yes
+      --maxmemory 128mb --maxmemory-policy noeviction
+    volumes:
+      - redis-data:/data
+    expose:
+      - '6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
   server:
     build:
       context: .
       dockerfile: apps/server/Dockerfile
     restart: unless-stopped
     env_file: .env.production
+    depends_on:
+      redis:
+        condition: service_healthy
     expose:
       - '4000'
     ports:
@@ -65,3 +90,4 @@ services:
 volumes:
   caddy-data:
   caddy-config:
+  redis-data:

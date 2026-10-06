@@ -27,3 +27,5 @@ coverage/
 
 # Production secrets
 .env.production
+*credentials*.env
+*-credentials.env

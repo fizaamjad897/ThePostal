@@ -26,7 +26,12 @@ services:
       - caddy-config:/config
     environment:
       API_DOMAIN: ${API_DOMAIN:?set API_DOMAIN in .env.production}
-      MAIL_UI_DOMAIN: ${MAIL_UI_DOMAIN:-}
+      # `:-` substitutes when the variable is unset OR empty, which is what makes
+      # leaving MAIL_UI_DOMAIN blank work: Caddy's own `{$VAR:default}` only
+      # applies when a variable is absent, and compose always passes it through.
+      # A .localhost name keeps the site block valid and is served by Caddy's
+      # internal CA, so no public certificate is ever requested for it.
+      MAIL_UI_DOMAIN: ${MAIL_UI_DOMAIN:-mailpit.localhost}
     depends_on:
       - server
 

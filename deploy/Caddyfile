@@ -25,7 +25,12 @@
 }
 
 # Optional: the Mailpit UI, so a visitor can read the mail the demo delivered.
-# Only served when MAIL_UI_DOMAIN is set; it is protected by MP_UI_AUTH.
-{$MAIL_UI_DOMAIN} {
+#
+# A Caddyfile has no conditionals, and an empty site address makes the whole
+# config invalid ("server block without any key"). So when MAIL_UI_DOMAIN is not
+# set this falls back to a .localhost name, which Caddy serves with its internal
+# CA rather than requesting a public certificate — the block stays valid and the
+# UI simply is not reachable from the internet.
+{$MAIL_UI_DOMAIN:mailpit.localhost} {
 	reverse_proxy mailpit:8025
 }

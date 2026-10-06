@@ -257,4 +257,4 @@ docker compose --env-file .env.production -f docker-compose.prod.yml \
 | `readyz` reports `mongo: down` | The instance IP is not allow-listed in Atlas Network Access |
 | Login works, then 401s a few minutes later | The frontend is bypassing the Vercel proxy — see step 7 |
 | Build killed during `docker compose build` | Swap was not added in step 5 |
-| Messages stay `queued` | `REDIS_URL` is set but unreachable; check `docker compose logs server` |
+| Messages stay `queued` | The `redis` container is unhealthy; check it in `docker compose ps` |

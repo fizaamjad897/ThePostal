@@ -427,7 +427,7 @@ Postal runs an SMTP listener and a delivery worker that must stay alive, so it
 needs a real host rather than a serverless one.
 
 See **[docs/DEPLOY.md](docs/DEPLOY.md)** for the full runbook (AWS EC2 + Vercel +
-Atlas + Upstash, with automatic TLS via Caddy).
+Atlas, with automatic TLS via Caddy).
 
 ```bash
 docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build

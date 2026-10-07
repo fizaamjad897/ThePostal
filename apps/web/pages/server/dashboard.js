@@ -98,7 +98,7 @@ export default function ServerDashboard() {
   const deliveryRate = summary ? Math.round(summary.deliveryRate * 1000) / 10 : 0;
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#F8FAFC' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       <TopBar />
 
       <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -110,10 +110,10 @@ export default function ServerDashboard() {
           sx={{ mb: 4 }}
         >
           <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: '#0F172A' }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: 'text.primary' }}>
               Delivery telemetry
             </Typography>
-            <Typography variant="body2" sx={{ color: '#64748B' }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               Measured from your own SMTP transactions — not simulated.
             </Typography>
           </Box>
@@ -143,7 +143,6 @@ export default function ServerDashboard() {
           <Grid item xs={12} sm={6} lg={3}>
             <MetricCard
               Icon={CheckCircle}
-              color="#10B981"
               label="Delivery rate"
               value={`${deliveryRate}%`}
               caption={`${totals.sent ?? 0} delivered · ${totals.failed ?? 0} failed`}
@@ -153,7 +152,6 @@ export default function ServerDashboard() {
           <Grid item xs={12} sm={6} lg={3}>
             <MetricCard
               Icon={Speed}
-              color="#6366F1"
               label="Median transaction"
               value={summary?.latency.p50Ms != null ? `${summary.latency.p50Ms} ms` : '—'}
               caption={
@@ -166,7 +164,6 @@ export default function ServerDashboard() {
           <Grid item xs={12} sm={6} lg={3}>
             <MetricCard
               Icon={Inventory2}
-              color="#F59E0B"
               label="In flight"
               value={String((totals.queued ?? 0) + (totals.deferred ?? 0))}
               caption={`${totals.queued ?? 0} queued · ${totals.deferred ?? 0} awaiting retry`}
@@ -175,7 +172,6 @@ export default function ServerDashboard() {
           <Grid item xs={12} sm={6} lg={3}>
             <MetricCard
               Icon={Bolt}
-              color="#0EA5E9"
               label="Received"
               value={String(totals.received ?? 0)}
               caption="Inbound over the SMTP listener"
@@ -190,7 +186,7 @@ export default function ServerDashboard() {
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
                   Where the time goes
                 </Typography>
-                <Typography variant="body2" sx={{ color: '#64748B', mb: 3 }}>
+                <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
                   Mean duration of each SMTP phase across every delivered message in this window.
                 </Typography>
 
@@ -238,8 +234,8 @@ export default function ServerDashboard() {
                       </Stack>
                       <Divider />
                       <Stack direction="row" alignItems="center" spacing={1.5}>
-                        <Memory sx={{ fontSize: 18, color: '#94A3B8' }} />
-                        <Typography variant="body2" sx={{ color: '#475569' }}>
+                        <Memory sx={{ fontSize: 18, color: 'text.disabled' }} />
+                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                           {health.process.rssMb} MB RSS · event loop lag{' '}
                           {health.process.eventLoopDelayMs} ms · up{' '}
                           {formatUptime(health.uptimeSeconds)}
@@ -247,7 +243,7 @@ export default function ServerDashboard() {
                       </Stack>
                     </Stack>
                   ) : (
-                    <Typography variant="body2" sx={{ color: '#94A3B8' }}>
+                    <Typography variant="body2" sx={{ color: 'text.disabled' }}>
                       Health endpoint unreachable.
                     </Typography>
                   )}
@@ -262,7 +258,7 @@ export default function ServerDashboard() {
                         width: 8,
                         height: 8,
                         borderRadius: '50%',
-                        bgcolor: '#10B981',
+                        bgcolor: 'success.main',
                         animation: 'pulse 2s ease-in-out infinite',
                         '@keyframes pulse': {
                           '0%, 100%': { opacity: 1 },
@@ -276,7 +272,7 @@ export default function ServerDashboard() {
                   </Stack>
 
                   {feed.length === 0 ? (
-                    <Typography variant="body2" sx={{ color: '#94A3B8' }}>
+                    <Typography variant="body2" sx={{ color: 'text.disabled' }}>
                       Connected. Events appear here as messages move through the queue.
                     </Typography>
                   ) : (
@@ -285,11 +281,11 @@ export default function ServerDashboard() {
                         <Stack key={event.key} direction="row" spacing={1.5} alignItems="baseline">
                           <Typography
                             variant="caption"
-                            sx={{ color: '#94A3B8', fontFamily: 'monospace', flexShrink: 0 }}
+                            sx={{ color: 'text.disabled', fontFamily: 'monospace', flexShrink: 0 }}
                           >
                             {new Date(event.at).toLocaleTimeString()}
                           </Typography>
-                          <Typography variant="body2" sx={{ color: '#334155' }}>
+                          <Typography variant="body2" sx={{ color: 'text.primary' }}>
                             {describeEvent(event)}
                           </Typography>
                         </Stack>
@@ -306,23 +302,31 @@ export default function ServerDashboard() {
   );
 }
 
-function MetricCard({ Icon, color, label, value, caption, progress }) {
+function MetricCard({ Icon, label, value, caption, progress }) {
   return (
-    <Card sx={{ borderRadius: 3, height: '100%' }}>
-      <CardContent sx={{ p: 2.5 }}>
-        <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 1.5 }}>
-          <Box sx={{ bgcolor: `${color}1A`, borderRadius: 2, p: 1, display: 'flex' }}>
-            <Icon sx={{ color, fontSize: 20 }} />
-          </Box>
-          <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 600 }}>
+    <Card sx={{ height: '100%' }}>
+      <CardContent sx={{ p: 2.25 }}>
+        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1.75 }}>
+          <Icon sx={{ fontSize: 15, color: 'text.disabled' }} />
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 550 }}>
             {label}
           </Typography>
         </Stack>
 
-        <Typography variant="h4" sx={{ fontWeight: 700, color: '#0F172A', mb: 0.5 }}>
+        <Typography
+          className="mono tnum"
+          sx={{
+            fontFamily: 'var(--mono)',
+            fontSize: '1.75rem',
+            fontWeight: 600,
+            letterSpacing: '-0.03em',
+            lineHeight: 1,
+            mb: 0.75,
+          }}
+        >
           {value}
         </Typography>
-        <Typography variant="caption" sx={{ color: '#94A3B8' }}>
+        <Typography variant="caption" sx={{ color: 'text.disabled' }}>
           {caption}
         </Typography>
 
@@ -330,13 +334,7 @@ function MetricCard({ Icon, color, label, value, caption, progress }) {
           <LinearProgress
             variant="determinate"
             value={Math.min(100, Math.max(0, progress))}
-            sx={{
-              mt: 1.5,
-              height: 6,
-              borderRadius: 3,
-              bgcolor: `${color}22`,
-              '& .MuiLinearProgress-bar': { bgcolor: color },
-            }}
+            sx={{ mt: 1.75, height: 4, '& .MuiLinearProgress-bar': { bgcolor: 'primary.main' } }}
           />
         )}
       </CardContent>
@@ -348,8 +346,8 @@ function HealthRow({ Icon, label, state }) {
   const up = state === 'up';
   return (
     <Stack direction="row" alignItems="center" spacing={1.5}>
-      <Icon sx={{ fontSize: 18, color: '#94A3B8' }} />
-      <Typography variant="body2" sx={{ color: '#475569', flexGrow: 1 }}>
+      <Icon sx={{ fontSize: 18, color: 'text.disabled' }} />
+      <Typography variant="body2" sx={{ color: 'text.secondary', flexGrow: 1 }}>
         {label}
       </Typography>
       <Chip
@@ -372,7 +370,7 @@ function HealthRow({ Icon, label, state }) {
 function ThroughputChart({ series }) {
   if (series.length === 0) {
     return (
-      <Typography variant="body2" sx={{ color: '#94A3B8' }}>
+      <Typography variant="body2" sx={{ color: 'text.disabled' }}>
         No messages in this window yet.
       </Typography>
     );
@@ -397,14 +395,14 @@ function ThroughputChart({ series }) {
               <Box
                 sx={{
                   height: `${(point.failed / peak) * 100}%`,
-                  bgcolor: '#EF4444',
+                  bgcolor: 'error.main',
                   borderRadius: '2px 2px 0 0',
                 }}
               />
               <Box
                 sx={{
                   height: `${(point.sent / peak) * 100}%`,
-                  bgcolor: '#10B981',
+                  bgcolor: 'success.main',
                   borderRadius: total === point.sent ? '2px 2px 0 0' : 0,
                 }}
               />

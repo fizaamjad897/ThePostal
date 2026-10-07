@@ -13,9 +13,10 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { MarkEmailRead, Lock } from '@mui/icons-material';
+import { LockRounded } from '@mui/icons-material';
 import { useAuth } from '../lib/auth-context';
 import { ApiError } from '../lib/api';
+import Wordmark from '../components/Wordmark';
 
 /**
  * Mirrors the server's password policy so the user is told what is wrong before
@@ -84,28 +85,17 @@ export default function AuthPage() {
         display: 'grid',
         placeItems: 'center',
         p: 2,
-        background: 'linear-gradient(135deg, #EEF2FF 0%, #F8FAFC 50%, #FDF4FF 100%)',
+        bgcolor: 'background.default',
       }}
     >
       <Card sx={{ width: '100%', maxWidth: 460, borderRadius: 4 }}>
         <CardContent sx={{ p: { xs: 3, sm: 5 } }}>
           <Stack spacing={1} alignItems="center" sx={{ mb: 4 }}>
-            <Box
-              sx={{
-                width: 56,
-                height: 56,
-                borderRadius: 3,
-                display: 'grid',
-                placeItems: 'center',
-                background: 'linear-gradient(45deg, #5B21B6, #7C3AED)',
-              }}
-            >
-              <MarkEmailRead sx={{ color: '#fff', fontSize: 30 }} />
-            </Box>
-            <Typography variant="h5" sx={{ fontWeight: 700, color: '#1F2937' }}>
+            <Wordmark size={26} showText={false} />
+            <Typography variant="h5" sx={{ fontWeight: 700, color: 'text.primary' }}>
               {isSignUp ? 'Create your mailbox' : 'Welcome back'}
             </Typography>
-            <Typography variant="body2" sx={{ color: '#6B7280', textAlign: 'center' }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary', textAlign: 'center' }}>
               {isSignUp
                 ? 'Your address becomes a real mailbox on this server.'
                 : 'Sign in to send mail and inspect delivery telemetry.'}
@@ -155,7 +145,7 @@ export default function AuthPage() {
               {isSignUp && form.password.length > 0 && unmetRules.length > 0 && (
                 <Box sx={{ pl: 0.5 }}>
                   {unmetRules.map((rule) => (
-                    <Typography key={rule.label} variant="caption" sx={{ display: 'block', color: '#B91C1C' }}>
+                    <Typography key={rule.label} variant="caption" sx={{ display: 'block', color: 'error.main' }}>
                       • {rule.label}
                     </Typography>
                   ))}
@@ -168,7 +158,7 @@ export default function AuthPage() {
                 size="large"
                 fullWidth
                 disabled={!canSubmit || submitting}
-                startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <Lock />}
+                startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <LockRounded sx={{ fontSize: 17 }} />}
               >
                 {submitting ? 'Please wait…' : isSignUp ? 'Create account' : 'Sign in'}
               </Button>
@@ -177,7 +167,7 @@ export default function AuthPage() {
 
           <Divider sx={{ my: 3 }} />
 
-          <Typography variant="body2" sx={{ textAlign: 'center', color: '#6B7280' }}>
+          <Typography variant="body2" sx={{ textAlign: 'center', color: 'text.secondary' }}>
             {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
             <MuiLink
               component="button"

@@ -1,98 +1,25 @@
+/* Only what the MUI theme cannot reach. Everything visual lives in theme.js. */
+
 html,
 body {
   padding: 0;
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
-  background: #F9FAFB;
-  color: #1F2937;
-}
-
-a {
-  color: #5B21B6;
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-a:hover {
-  color: #7C3AED;
 }
 
 * {
   box-sizing: border-box;
 }
 
-.svg-background {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  z-index: -1;
-  opacity: 0.1;
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
-.feature-gradient-purple {
-  background: linear-gradient(135deg, #5B21B6, #7C3AED);
+/* Protocol transcripts and timing columns must not reflow mid-read. */
+.mono {
+  font-feature-settings: 'tnum' 1, 'calt' 0;
 }
 
-.feature-gradient-yellow {
-  background: linear-gradient(135deg, #FCD34D, #F59E0B);
+:root {
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
-
-.feature-gradient-blue {
-  background: linear-gradient(135deg, #38BDF8, #0EA5E9);
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #F9FAFB;
-}
-
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(45deg, #5B21B6, #7C3AED);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(45deg, #4C1D95, #5B21B6);
-}
-
-/* Animation for hero image */
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-.hero-image {
-  animation: float 6s ease-in-out infinite;
-  max-width: 100%;
-  height: auto;
-}
-
-/* Gradient text utility */
-.gradient-text {
-  background: linear-gradient(45deg, #5B21B6, #7C3AED);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Card hover effects */
-.hover-card {
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-
-.hover-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(91, 33, 182, 0.12);
-}
-

@@ -93,7 +93,7 @@ export default function MessageDetailPage() {
   const canRetry = message && (message.status === 'failed' || message.status === 'deferred');
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#F8FAFC' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       <TopBar />
 
       <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -113,7 +113,7 @@ export default function MessageDetailPage() {
               <Card sx={{ borderRadius: 3, height: '100%' }}>
                 <CardContent sx={{ p: { xs: 2.5, sm: 4 } }}>
                   <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
-                    <Typography variant="h5" sx={{ fontWeight: 700, color: '#0F172A' }}>
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: 'text.primary' }}>
                       {message.subject}
                     </Typography>
                     <StatusChip status={message.status} size="medium" />
@@ -136,11 +136,11 @@ export default function MessageDetailPage() {
                     // itself compromised.
                     <Paper
                       variant="outlined"
-                      sx={{ p: 2, bgcolor: '#0F172A', overflowX: 'auto', borderRadius: 2 }}
+                      sx={{ p: 2, bgcolor: 'text.primary', overflowX: 'auto', borderRadius: 2 }}
                     >
                       <Typography
                         component="pre"
-                        sx={{ m: 0, color: '#E2E8F0', fontFamily: 'monospace', fontSize: 13 }}
+                        sx={{ m: 0, color: 'divider', fontFamily: 'monospace', fontSize: 13 }}
                       >
                         {message.body}
                       </Typography>
@@ -153,7 +153,7 @@ export default function MessageDetailPage() {
                         whiteSpace: 'pre-wrap',
                         wordBreak: 'break-word',
                         fontFamily: 'inherit',
-                        color: '#334155',
+                        color: 'text.primary',
                         lineHeight: 1.7,
                       }}
                     >
@@ -183,7 +183,7 @@ export default function MessageDetailPage() {
                     <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
                       SMTP transaction
                     </Typography>
-                    <Typography variant="body2" sx={{ color: '#64748B', mb: 3 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
                       Time spent in each phase of the delivery conversation.
                     </Typography>
 
@@ -248,19 +248,19 @@ export default function MessageDetailPage() {
                               </Typography>
                               <StatusChip status={attempt.status} />
                             </Stack>
-                            <Typography variant="caption" sx={{ display: 'block', color: '#64748B' }}>
+                            <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
                               {new Date(attempt.startedAt).toLocaleString()}
                             </Typography>
                             {attempt.responseCode && (
                               <Typography
                                 variant="body2"
-                                sx={{ fontFamily: 'monospace', fontSize: 12, color: '#334155', mt: 0.5 }}
+                                sx={{ fontFamily: 'monospace', fontSize: 12, color: 'text.primary', mt: 0.5 }}
                               >
                                 {attempt.responseCode} {attempt.responseText}
                               </Typography>
                             )}
                             {attempt.error && (
-                              <Typography variant="body2" sx={{ color: '#B91C1C', mt: 0.5 }}>
+                              <Typography variant="body2" sx={{ color: 'error.main', mt: 0.5 }}>
                                 {attempt.error}
                               </Typography>
                             )}
@@ -283,7 +283,7 @@ export default function MessageDetailPage() {
                       <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
                         Client-side path
                       </Typography>
-                      <Typography variant="body2" sx={{ color: '#64748B', mb: 2 }}>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
                         The browser&rsquo;s link to this server &mdash; the other half of the journey.
                       </Typography>
                       <Stack spacing={1}>
@@ -312,13 +312,13 @@ export default function MessageDetailPage() {
 function AddressLine({ label, value, mono = false }) {
   return (
     <Stack direction="row" spacing={1}>
-      <Typography variant="body2" sx={{ color: '#94A3B8', minWidth: 90, flexShrink: 0 }}>
+      <Typography variant="body2" sx={{ color: 'text.disabled', minWidth: 90, flexShrink: 0 }}>
         {label}
       </Typography>
       <Typography
         variant="body2"
         sx={{
-          color: '#334155',
+          color: 'text.primary',
           wordBreak: 'break-word',
           ...(mono ? { fontFamily: 'monospace', fontSize: 12 } : {}),
         }}
@@ -332,11 +332,11 @@ function AddressLine({ label, value, mono = false }) {
 function Fact({ Icon, label, value }) {
   return (
     <Stack direction="row" alignItems="center" spacing={1.5}>
-      {Icon && <Icon sx={{ fontSize: 18, color: '#94A3B8' }} />}
-      <Typography variant="body2" sx={{ color: '#94A3B8', minWidth: 96 }}>
+      {Icon && <Icon sx={{ fontSize: 18, color: 'text.disabled' }} />}
+      <Typography variant="body2" sx={{ color: 'text.disabled', minWidth: 96 }}>
         {label}
       </Typography>
-      <Typography variant="body2" sx={{ color: '#334155', fontWeight: 500, wordBreak: 'break-word' }}>
+      <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 500, wordBreak: 'break-word' }}>
         {value}
       </Typography>
     </Stack>

@@ -38,9 +38,9 @@ import MailCard from './MailCard';
 import StatusChip from './StatusChip';
 
 const FOLDERS = [
-  { key: 'inbox', label: 'Inbox', Icon: InboxIcon, color: '#F59E0B' },
-  { key: 'sent', label: 'Sent', Icon: SendIcon, color: '#38BDF8' },
-  { key: 'archive', label: 'Archive', Icon: ArchiveIcon, color: '#10B981' },
+  { key: 'inbox', label: 'Inbox', Icon: InboxIcon },
+  { key: 'sent', label: 'Sent', Icon: SendIcon },
+  { key: 'archive', label: 'Archive', Icon: ArchiveIcon },
 ];
 
 export default function EmailDashboard() {
@@ -158,7 +158,7 @@ export default function EmailDashboard() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#F8FAFC' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       <TopBar />
 
       <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -170,10 +170,10 @@ export default function EmailDashboard() {
           sx={{ mb: 4 }}
         >
           <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: '#0F172A' }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: 'text.primary' }}>
               {user?.displayName || 'Mailbox'}
             </Typography>
-            <Typography variant="body2" sx={{ color: '#64748B' }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               {user?.email}
               {unread > 0 && ` · ${unread} unread on this page`}
             </Typography>
@@ -190,13 +190,12 @@ export default function EmailDashboard() {
         </Stack>
 
         <Grid container spacing={2} sx={{ mb: 3 }}>
-          {FOLDERS.map(({ key, label, Icon, color }) => (
+          {FOLDERS.map(({ key, label, Icon }) => (
             <Grid item xs={12} sm={4} key={key}>
               <MailCard
                 icon={<Icon />}
                 title={label}
                 count={key === folder ? state.total : (counts[key] ?? '—')}
-                color={color}
                 selected={folder === key}
                 onClick={() => {
                   setFolder(key);
@@ -217,7 +216,7 @@ export default function EmailDashboard() {
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ color: '#94A3B8' }} />
+                <SearchIcon sx={{ color: 'text.disabled' }} />
               </InputAdornment>
             ),
           }}
@@ -288,13 +287,14 @@ function MessageRow({ message, folder, onOpen, onStar, onDelete, onRetry }) {
         py: 1.75,
         cursor: 'pointer',
         // Unread mail is marked by weight and a left rule, not by colour alone.
-        borderLeft: message.read ? '3px solid transparent' : '3px solid #7C3AED',
-        bgcolor: message.read ? 'transparent' : 'rgba(124, 58, 237, 0.04)',
+        borderLeft: '2px solid',
+        borderLeftColor: message.read ? 'transparent' : 'primary.main',
+        bgcolor: 'transparent',
         '&:hover': { bgcolor: 'rgba(15, 23, 42, 0.04)' },
       }}
     >
       <IconButton size="small" onClick={onStar} aria-label={message.starred ? 'Unstar' : 'Star'}>
-        {message.starred ? <StarIcon sx={{ color: '#F59E0B' }} /> : <StarBorderIcon sx={{ color: '#CBD5E1' }} />}
+        {message.starred ? <StarIcon sx={{ fontSize: 18, color: 'warning.main' }} /> : <StarBorderIcon sx={{ fontSize: 18, color: 'text.disabled' }} />}
       </IconButton>
 
       <Box sx={{ minWidth: 0, flexGrow: 1 }}>
@@ -302,15 +302,15 @@ function MessageRow({ message, folder, onOpen, onStar, onDelete, onRetry }) {
           <Typography
             noWrap
             variant="subtitle2"
-            sx={{ fontWeight: message.read ? 500 : 700, color: '#0F172A', maxWidth: '60%' }}
+            sx={{ fontWeight: message.read ? 500 : 700, color: 'text.primary', maxWidth: '60%' }}
           >
             {message.subject}
           </Typography>
           {folder !== 'inbox' && <StatusChip status={message.status} />}
         </Stack>
 
-        <Typography noWrap variant="body2" sx={{ color: '#64748B' }}>
-          <Box component="span" sx={{ fontWeight: 600, color: '#475569' }}>
+        <Typography noWrap variant="body2" sx={{ color: 'text.secondary' }}>
+          <Box component="span" sx={{ fontWeight: 600, color: 'text.secondary' }}>
             {counterparty}
           </Box>
           {message.bodyPreview ? ` — ${message.bodyPreview}` : ''}
@@ -318,21 +318,21 @@ function MessageRow({ message, folder, onOpen, onStar, onDelete, onRetry }) {
       </Box>
 
       <Stack direction="row" alignItems="center" spacing={0.5} sx={{ flexShrink: 0 }}>
-        <Typography variant="caption" sx={{ color: '#94A3B8', mr: 1, display: { xs: 'none', md: 'block' } }}>
+        <Typography variant="caption" sx={{ color: 'text.disabled', mr: 1, display: { xs: 'none', md: 'block' } }}>
           {formatTimestamp(message.createdAt)}
         </Typography>
 
         {canRetry && (
           <Tooltip title="Re-queue for delivery">
             <IconButton size="small" onClick={onRetry} aria-label="Retry delivery">
-              <ReplayIcon fontSize="small" sx={{ color: '#0EA5E9' }} />
+              <ReplayIcon sx={{ fontSize: 17, color: 'secondary.main' }} />
             </IconButton>
           </Tooltip>
         )}
 
         <Tooltip title="Delete">
           <IconButton size="small" onClick={onDelete} aria-label="Delete message">
-            <DeleteIcon fontSize="small" sx={{ color: '#94A3B8' }} />
+            <DeleteIcon fontSize="small" sx={{ color: 'text.disabled' }} />
           </IconButton>
         </Tooltip>
       </Stack>
@@ -343,11 +343,11 @@ function MessageRow({ message, folder, onOpen, onStar, onDelete, onRetry }) {
 function EmptyState({ folder, searching }) {
   return (
     <Stack spacing={1} alignItems="center" sx={{ py: 8, px: 3, textAlign: 'center' }}>
-      <InboxIcon sx={{ fontSize: 48, color: '#CBD5E1' }} />
-      <Typography variant="h6" sx={{ color: '#475569' }}>
+      <InboxIcon sx={{ fontSize: 48, color: 'text.disabled' }} />
+      <Typography variant="h6" sx={{ color: 'text.secondary' }}>
         {searching ? 'No matching messages' : `Nothing in ${folder}`}
       </Typography>
-      <Typography variant="body2" sx={{ color: '#94A3B8', maxWidth: 420 }}>
+      <Typography variant="body2" sx={{ color: 'text.disabled', maxWidth: 420 }}>
         {searching
           ? 'Try a shorter query — search covers the subject, sender, recipients and body.'
           : folder === 'inbox'

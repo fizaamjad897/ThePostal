@@ -2,101 +2,145 @@ import React from 'react';
 import { Box, Stack, Tooltip, Typography } from '@mui/material';
 
 /**
- * Renders an SMTP transaction as a proportional waterfall.
+ * An SMTP transaction, laid out to scale.
  *
- * A table of numbers makes you do the comparison yourself. Laid out to scale,
- * the answer to "what made this send slow" is immediate — a wide TLS band and a
- * wide DATA band mean completely different things, and the eye separates them
- * faster than it reads two figures.
+ * A table of durations makes the reader do the comparison. Drawn in proportion,
+ * the answer to "what made this slow" is immediate — and the phases that
+ * dominate are the only ones that take the signal colour, so the eye lands on
+ * them before it reads a single number.
  */
-const PHASE_META = {
-  dns: { label: 'DNS', color: '#8B5CF6', hint: 'Resolving the recipient domain’s MX records' },
-  tcp: { label: 'TCP', color: '#6366F1', hint: 'Opening the connection to the mail server' },
-  tls: { label: 'TLS', color: '#0EA5E9', hint: 'STARTTLS upgrade and certificate handshake' },
-  greeting: { label: 'Banner', color: '#14B8A6', hint: 'Waiting for the server’s 220 greeting' },
-  ehlo: { label: 'EHLO', color: '#22C55E', hint: 'Capability negotiation' },
-  auth: { label: 'AUTH', color: '#84CC16', hint: 'Authenticating to the relay' },
-  mailFrom: { label: 'MAIL', color: '#EAB308', hint: 'Declaring the envelope sender' },
-  rcptTo: { label: 'RCPT', color: '#F97316', hint: 'Declaring each envelope recipient' },
-  data: { label: 'DATA', color: '#EF4444', hint: 'Transferring the message body' },
-  quit: { label: 'QUIT', color: '#94A3B8', hint: 'Closing the session' },
+const LABELS = {
+  dns: 'DNS',
+  tcp: 'TCP',
+  tls: 'TLS',
+  greeting: 'Banner',
+  ehlo: 'EHLO',
+  auth: 'AUTH',
+  mailFrom: 'MAIL FROM',
+  rcptTo: 'RCPT TO',
+  data: 'DATA',
+  quit: 'QUIT',
 };
 
-export default function SmtpWaterfall({ phases = [], totalMs = 0 }) {
-  const measured = phases.filter((phase) => phase.durationMs > 0);
+const HINTS = {
+  dns: 'Resolving the recipient domain’s MX records',
+  tcp: 'Opening the connection to the mail server',
+  tls: 'STARTTLS upgrade and certificate handshake',
+  greeting: 'Waiting for the server’s 220 greeting',
+  ehlo: 'Capability negotiation',
+  auth: 'Authenticating to the relay',
+  mailFrom: 'Declaring the envelope sender',
+  rcptTo: 'Declaring each envelope recipient',
+  data: 'Transferring the message body',
+  quit: 'Closing the session',
+};
+
+export default function SmtpWaterfall({ phases = [], totalMs = 0, dense = false }) {
+  const measured = phases.filter((p) => p.durationMs > 0);
 
   if (measured.length === 0) {
     return (
-      <Typography variant="body2" sx={{ color: '#6B7280' }}>
-        No transaction was recorded for this message.
+      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+        No transaction has been recorded for this message yet.
       </Typography>
     );
   }
 
-  // Bars are scaled against the summed phases rather than `totalMs`, so they
-  // always fill the track. Total wall time includes gaps between phases, which
-  // would otherwise leave a misleading empty tail.
-  const scale = measured.reduce((sum, phase) => sum + phase.durationMs, 0) || 1;
+  const sum = measured.reduce((acc, p) => acc + p.durationMs, 0) || 1;
+  const peak = Math.max(...measured.map((p) => p.durationMs));
+  // A phase worth noticing is one taking a fifth or more of the transaction.
+  const significant = (ms) => ms / sum >= 0.2;
 
   return (
-    <Stack spacing={2}>
-      <Box
-        sx={{
-          display: 'flex',
-          height: 28,
-          borderRadius: 1.5,
-          overflow: 'hidden',
-          bgcolor: '#F1F5F9',
-        }}
-      >
-        {measured.map((phase) => {
-          const meta = PHASE_META[phase.phase] ?? { label: phase.phase, color: '#94A3B8', hint: '' };
-          const share = (phase.durationMs / scale) * 100;
+    <Box>
+      <Stack spacing={0}>
+        {measured.map((p) => {
+          const label = LABELS[p.phase] ?? p.phase;
+          const share = (p.durationMs / sum) * 100;
+          const lead = significant(p.durationMs);
 
           return (
             <Tooltip
-              key={phase.phase}
+              key={p.phase}
               arrow
-              title={`${meta.label} — ${phase.durationMs.toFixed(1)} ms (${share.toFixed(1)}%)${
-                meta.hint ? ` · ${meta.hint}` : ''
-              }`}
+              placement="top"
+              title={`${share.toFixed(1)}% of the transaction${HINTS[p.phase] ? ` · ${HINTS[p.phase]}` : ''}`}
             >
               <Box
                 sx={{
-                  width: `${share}%`,
-                  bgcolor: meta.color,
-                  transition: 'filter 0.2s ease',
-                  '&:hover': { filter: 'brightness(1.15)' },
-                  // A sub-percent phase would otherwise be invisible and
-                  // un-hoverable, so every phase keeps a minimum hit area.
-                  minWidth: 3,
+                  display: 'grid',
+                  gridTemplateColumns: dense ? '72px 1fr 58px' : '88px 1fr 68px',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  py: dense ? 0.4 : 0.6,
+                  cursor: 'default',
+                  '&:hover .bar': { opacity: 0.78 },
                 }}
-              />
-            </Tooltip>
-          );
-        })}
-      </Box>
+              >
+                <Typography
+                  className="mono"
+                  sx={{
+                    fontFamily: 'var(--mono)',
+                    fontSize: dense ? '0.6875rem' : '0.75rem',
+                    color: lead ? 'text.primary' : 'text.secondary',
+                    fontWeight: lead ? 600 : 400,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {label}
+                </Typography>
 
-      <Stack direction="row" flexWrap="wrap" sx={{ gap: 1.5 }}>
-        {measured.map((phase) => {
-          const meta = PHASE_META[phase.phase] ?? { label: phase.phase, color: '#94A3B8' };
-          return (
-            <Stack key={phase.phase} direction="row" alignItems="center" spacing={0.75}>
-              <Box sx={{ width: 10, height: 10, borderRadius: '2px', bgcolor: meta.color }} />
-              <Typography variant="caption" sx={{ color: '#475569' }}>
-                {meta.label}{' '}
-                <Box component="span" sx={{ fontWeight: 700, color: '#1E293B' }}>
-                  {phase.durationMs.toFixed(1)} ms
+                <Box sx={{ position: 'relative', height: dense ? 8 : 10, bgcolor: 'grey.100', borderRadius: 0.5 }}>
+                  <Box
+                    className="bar"
+                    sx={{
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: `${Math.max((p.durationMs / peak) * 100, 1.5)}%`,
+                      bgcolor: lead ? 'secondary.main' : 'grey.400',
+                      borderRadius: 0.5,
+                      transition: 'opacity 120ms ease',
+                    }}
+                  />
                 </Box>
-              </Typography>
-            </Stack>
+
+                <Typography
+                  className="mono tnum"
+                  sx={{
+                    fontFamily: 'var(--mono)',
+                    fontSize: dense ? '0.6875rem' : '0.75rem',
+                    textAlign: 'right',
+                    color: lead ? 'text.primary' : 'text.secondary',
+                    fontWeight: lead ? 600 : 400,
+                  }}
+                >
+                  {p.durationMs.toFixed(1)}
+                </Typography>
+              </Box>
+            </Tooltip>
           );
         })}
       </Stack>
 
-      <Typography variant="caption" sx={{ color: '#64748B' }}>
-        Total transaction time {totalMs.toFixed(1)} ms
-      </Typography>
-    </Stack>
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        sx={{ mt: 1.5, pt: 1.25, borderTop: '1px solid', borderColor: 'divider' }}
+      >
+        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+          Total transaction
+        </Typography>
+        <Typography
+          className="mono tnum"
+          sx={{ fontFamily: 'var(--mono)', fontSize: '0.75rem', fontWeight: 600 }}
+        >
+          {totalMs.toFixed(1)} ms
+        </Typography>
+      </Stack>
+    </Box>
   );
 }

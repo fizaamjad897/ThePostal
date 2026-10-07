@@ -123,14 +123,14 @@ export default function ComposeEmail() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#F8FAFC' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       <TopBar />
 
       <Container maxWidth="md" sx={{ py: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700, color: '#0F172A', mb: 0.5 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, color: 'text.primary', mb: 0.5 }}>
           New message
         </Typography>
-        <Typography variant="body2" sx={{ color: '#64748B', mb: 3 }}>
+        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
           Sending as {user?.email}. The server queues the message, opens an SMTP session, and records
           every phase of the transaction.
         </Typography>

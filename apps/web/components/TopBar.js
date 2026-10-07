@@ -12,107 +12,155 @@ import {
   MenuItem,
   Stack,
   Toolbar,
-  Tooltip,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
-import {
-  Logout,
-  MarkEmailRead,
-  Insights,
-  Inbox as InboxIcon,
-  Edit as EditIcon,
-} from '@mui/icons-material';
+import { Logout, MenuRounded } from '@mui/icons-material';
 import { useAuth } from '../lib/auth-context';
+import Wordmark from './Wordmark';
 
-const NAV_LINKS = [
-  { href: '/client/dashboard', label: 'Mailbox', Icon: InboxIcon },
-  { href: '/compose', label: 'Compose', Icon: EditIcon },
-  { href: '/server/dashboard', label: 'Telemetry', Icon: Insights },
+const LINKS = [
+  { href: '/client/dashboard', label: 'Mailbox' },
+  { href: '/compose', label: 'Compose' },
+  { href: '/server/dashboard', label: 'Telemetry' },
 ];
 
 export default function TopBar() {
   const router = useRouter();
+  const theme = useTheme();
+  const compact = useMediaQuery(theme.breakpoints.down('sm'));
   const { user, signOut } = useAuth();
-  const [anchor, setAnchor] = useState(null);
 
-  const initials = (user?.displayName || user?.email || '?').trim().charAt(0).toUpperCase();
+  const [account, setAccount] = useState(null);
+  const [nav, setNav] = useState(null);
+
+  const initial = (user?.displayName || user?.email || '?').trim().charAt(0).toUpperCase();
+
+  const go = (href) => {
+    setNav(null);
+    void router.push(href);
+  };
 
   return (
-    <AppBar
-      position="sticky"
-      elevation={0}
-      sx={{
-        background: 'linear-gradient(90deg, #4C1D95 0%, #6D28D9 60%, #7C3AED 100%)',
-      }}
-    >
-      <Toolbar sx={{ gap: 2 }}>
-        <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mr: 2 }}>
-          <MarkEmailRead />
-          <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: '-0.01em' }}>
-            Postal
-          </Typography>
-        </Stack>
+    <AppBar position="sticky">
+      <Toolbar sx={{ gap: 1 }}>
+        <Box
+          component="button"
+          onClick={() => go('/client/dashboard')}
+          aria-label="Postal home"
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            background: 'none',
+            border: 0,
+            p: 0,
+            mr: 2.5,
+            cursor: 'pointer',
+          }}
+        >
+          <Wordmark />
+        </Box>
 
-        <Stack direction="row" spacing={0.5} sx={{ flexGrow: 1, display: { xs: 'none', sm: 'flex' } }}>
-          {NAV_LINKS.map(({ href, label, Icon }) => {
-            const active = router.pathname === href;
-            return (
-              <Button
-                key={href}
-                color="inherit"
-                startIcon={<Icon />}
-                onClick={() => router.push(href)}
-                sx={{
-                  // The active page is marked with weight and a background wash
-                  // rather than colour alone.
-                  fontWeight: active ? 700 : 500,
-                  bgcolor: active ? 'rgba(255,255,255,0.16)' : 'transparent',
-                  '&:hover': { bgcolor: 'rgba(255,255,255,0.24)' },
-                }}
-              >
-                {label}
-              </Button>
-            );
-          })}
-        </Stack>
-
-        <Box sx={{ flexGrow: { xs: 1, sm: 0 } }} />
+        {compact ? (
+          <>
+            <Box sx={{ flexGrow: 1 }} />
+            <IconButton onClick={(e) => setNav(e.currentTarget)} aria-label="Open navigation">
+              <MenuRounded />
+            </IconButton>
+            <Menu anchorEl={nav} open={Boolean(nav)} onClose={() => setNav(null)}>
+              {LINKS.map(({ href, label }) => (
+                <MenuItem key={href} selected={router.pathname === href} onClick={() => go(href)}>
+                  {label}
+                </MenuItem>
+              ))}
+            </Menu>
+          </>
+        ) : (
+          <Stack direction="row" spacing={0.25} sx={{ flexGrow: 1 }}>
+            {LINKS.map(({ href, label }) => {
+              const active = router.pathname === href;
+              return (
+                <Button
+                  key={href}
+                  onClick={() => go(href)}
+                  disableRipple
+                  sx={{
+                    px: 1.25,
+                    color: active ? 'text.primary' : 'text.secondary',
+                    fontWeight: active ? 600 : 500,
+                    borderRadius: 0,
+                    // The active page is marked by a rule aligned to the
+                    // header's own bottom border, so the two read as one line.
+                    position: 'relative',
+                    '&::after': active
+                      ? {
+                          content: '""',
+                          position: 'absolute',
+                          left: 10,
+                          right: 10,
+                          bottom: -16,
+                          height: 2,
+                          backgroundColor: 'text.primary',
+                        }
+                      : undefined,
+                    '&:hover': { backgroundColor: 'transparent', color: 'text.primary' },
+                  }}
+                >
+                  {label}
+                </Button>
+              );
+            })}
+          </Stack>
+        )}
 
         {user && (
-          <Tooltip title={user.email}>
-            <IconButton onClick={(event) => setAnchor(event.currentTarget)} size="small">
-              <Avatar sx={{ width: 34, height: 34, bgcolor: '#FDE68A', color: '#78350F', fontWeight: 700 }}>
-                {initials}
-              </Avatar>
-            </IconButton>
-          </Tooltip>
+          <IconButton onClick={(e) => setAccount(e.currentTarget)} aria-label="Account" sx={{ p: 0.5 }}>
+            <Avatar
+              sx={{
+                width: 28,
+                height: 28,
+                fontSize: 12,
+                fontWeight: 600,
+                bgcolor: 'primary.main',
+                color: '#fff',
+              }}
+            >
+              {initial}
+            </Avatar>
+          </IconButton>
         )}
 
         <Menu
-          anchorEl={anchor}
-          open={Boolean(anchor)}
-          onClose={() => setAnchor(null)}
+          anchorEl={account}
+          open={Boolean(account)}
+          onClose={() => setAccount(null)}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          slotProps={{ paper: { sx: { minWidth: 220 } } }}
         >
-          <Box sx={{ px: 2, py: 1 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+          <Box sx={{ px: 1.75, py: 1.25 }}>
+            <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
               {user?.displayName}
             </Typography>
-            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            <Typography
+              className="mono"
+              variant="caption"
+              sx={{ color: 'text.secondary', fontFamily: 'var(--mono)', wordBreak: 'break-all' }}
+            >
               {user?.email}
             </Typography>
           </Box>
           <Divider />
           <MenuItem
             onClick={async () => {
-              setAnchor(null);
+              setAccount(null);
               await signOut();
               await router.push('/auth');
             }}
           >
             <ListItemIcon>
-              <Logout fontSize="small" />
+              <Logout sx={{ fontSize: 17 }} />
             </ListItemIcon>
             Sign out
           </MenuItem>
